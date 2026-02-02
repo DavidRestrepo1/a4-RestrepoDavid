@@ -1,84 +1,109 @@
-const http = require( "node:http" ),
-    fs   = require( "node:fs" ),
-    // IMPORTANT: you must run `npm install` in the directory for this assignment
-    // to install the mime library if you're testing this on your local machine.
-    // However, Glitch will install it automatically by looking in your package.json
-    // file.
-    mime = require( "mime" ),
-    dir  = "public/",
-    port = 3000
+const http = require("node:http");
+const fs = require("node:fs");
+const mime = require("mime");
 
-const appdata = [
-    { "model": "toyota", "year": 1999, "mpg": 23 },
-    { "model": "honda", "year": 2004, "mpg": 30 },
-    { "model": "ford", "year": 1987, "mpg": 14}
-]
+const port = 3000;
+const publicDir = "public/";
 
-// let fullURL = ""
-const server = http.createServer( function( request,response ) {
-    if( request.method === "GET" ) {
-        handleGet( request, response )
-    }else if( request.method === "POST" ){
-        handlePost( request, response )
+let tasks = [];
+
+const server = http.createServer((req, res) => {
+
+    //API ROUTES
+    if (req.url === "/api/tasks" && req.method === "GET") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(tasks));
+        return;
     }
 
-    // The following shows the requests being sent to the server
-    // fullURL = `http://${request.headers.host}${request.url}`
-    // console.log( fullURL );
-})
+    if (req.url === "/api/tasks" && req.method === "POST") {
+        let body = "";
 
-const handleGet = function( request, response ) {
-    const filename = dir + request.url.slice( 1 )
+        req.on("data", chunk => body += chunk);
+        req.on("end", () => {
+            const data = JSON.parse(body);
 
-    if( request.url === "/" ) {
-        sendFile( response, "public/index.html" )
-    }else{
-        sendFile( response, filename )
+            const created = new Date();
+            const deadline = calculateDeadline(created, data.priority);
+
+            tasks.push({
+                task: data.task,
+                priority: data.priority,
+                hours: data.hours,
+                created: created.toDateString(),
+                deadline: deadline
+            });
+
+            res.writeHead(200);
+            res.end("Task added");
+        });
+        return;
     }
-}
 
-const handlePost = function( request, response ) {
-    let dataString = ""
+    if (req.url.startsWith("/api/tasks/") && req.method === "DELETE") {
+        const index = parseInt(req.url.split("/").pop());
+        tasks.splice(index, 1);
 
-    request.on( "data", function( data ) {
-        dataString += data
-    })
+        res.writeHead(200);
+        res.end("Deleted");
+        return;
+    }
 
-    request.on( "end", function() {
-        console.log( JSON.parse( dataString ) )
+    //UPDATE EXISTING TASK
+    if (req.url.startsWith("/api/tasks/") && req.method === "PUT") {
+        const index = parseInt(req.url.split("/").pop());
+        let body = "";
 
-        // ... do something with the data here and at least generate the derived data
+        req.on("data", chunk => body += chunk);
+        req.on("end", () => {
+            const data = JSON.parse(body);
 
-        response.writeHead( 200, "OK", {"Content-Type": "text/plain" })
-        response.end("text")
-    })
-}
+            const created = new Date(tasks[index].created);
+            const deadline = calculateDeadline(created, data.priority);
 
-const sendFile = function( response, filename ) {
-    const type = mime.getType( filename )
+            tasks[index] = {
+                task: data.task,
+                priority: data.priority,
+                hours: data.hours,
+                created: tasks[index].created,
+                deadline: deadline
+            };
 
-    fs.readFile( filename, function( err, content ) {
+            res.writeHead(200);
+            res.end("Updated");
+        });
+        return;
+    }
 
-        // if the error = null, then we've loaded the file successfully
-        if( err === null ) {
+    //STATIC FILES
+    const cleanUrl = req.url.split("?")[0];
+    let filePath = cleanUrl === "/" ? "index.html" : cleanUrl.slice(1);
+    filePath = "public/" + filePath;
 
-            // status code: https://httpstatuses.com
-            response.writeHeader( 200, { "Content-Type": type })
-            response.end( content )
-
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            console.error("FILE NOT FOUND:", filePath);
+            res.writeHead(404);
+            res.end("404 Not Found");
         } else {
-
-            // file not found, error code 404
-            response.writeHeader( 404 )
-            response.end( "404 Error: File Not Found" )
-
+            res.writeHead(200, { "Content-Type": mime.getType(filePath) });
+            res.end(data);
         }
-    })
+    });
+
+});
+
+//DERIVED FIELD FUNCTION
+function calculateDeadline(created, priority) {
+    const days = priority == 1 ? 7 :
+        priority == 2 ? 5 :
+            priority == 3 ? 3 : 1;
+
+    const d = new Date(created);
+    d.setDate(d.getDate() + days);
+    return d.toDateString();
 }
 
-// process.env.PORT references the port that Glitch uses
-// the following line will either use the Glitch port or one that we provided
-server.listen( process.env.PORT || port, () => {
-    console.log("Server listening on port " + port);
-} )
-
+server.listen(process.env.PORT || port, () => {
+    console.log("Server running on port", port);
+});

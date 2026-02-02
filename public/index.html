@@ -1,19 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>CS4241 Assignment 2</title>
     <meta charset="utf-8">
-    <script src="js/client.js"></script>
-    <link rel="stylesheet" href="css/main.css">
-
-    <!-- get rid of favicon error -->
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <title>Study Task Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="client.js"></script>
 </head>
 <body>
-<form>
-    <label for="yourname">Your Name: </label><input type="text" id="yourname" value="your name here">
-    <button>submit</button>
-</form>
+
+<div class="container">
+    <h1 id="title">Study Task Tracker</h1>
+
+    <div class="card">
+        <h2>Add a Task</h2>
+
+        <form id="taskForm">
+            <label>Task Name</label>
+            <input id="task" required>
+
+            <label>Priority (1–4)</label>
+            <input id="priority" type="number" min="1" max="4" required>
+
+            <label>Hours Needed</label>
+            <input id="hours" type="number" required>
+
+            <button type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Current Tasks</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Hours</th>
+                <th>Created</th>
+                <th>Deadline</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="results"></tbody>
+        </table>
+    </div>
+</div>
 
 </body>
+
 </html>

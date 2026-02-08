@@ -1,91 +1,86 @@
-window.onload = () => {
-    document.querySelector("#taskForm").onsubmit = addTask;
-    loadTasks();
+const username = localStorage.getItem("username");
+
+// redirect if not logged in
+if (!username) {
+    window.location.href = "/login.html";
+}
+
+const taskForm = document.getElementById("taskForm");
+const taskInput = document.getElementById("taskInput");
+const taskList = document.getElementById("taskList");
+const logoutBtn = document.getElementById("logoutBtn");
+
+let editingId = null;
+
+// logout
+logoutBtn.onclick = () => {
+    localStorage.clear();
+    window.location.href = "/login.html";
 };
 
+// load tasks
 async function loadTasks() {
-    const res = await fetch("/api/tasks");
-    const data = await res.json();
+    const res = await fetch(`/tasks/${username}`);
+    const tasks = await res.json();
 
-    const table = document.querySelector("#results");
-    table.innerHTML = "";
+    taskList.innerHTML = "";
 
-    data.forEach((task, i) => {
-        table.innerHTML += `
-      <tr>
-        <td>${task.task}</td>
-        <td>${task.priority}</td>
-        <td>${task.hours}</td>
-        <td>${task.created}</td>
-        <td>${task.deadline}</td>
-        <td><button onclick="deleteTask(${i})">X</button></td>
-      </tr>
-    `;
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between items-center border p-2 rounded";
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+
+        const buttons = document.createElement("div");
+        buttons.className = "space-x-2";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.className = "text-blue-500";
+        editBtn.onclick = () => {
+            taskInput.value = task.text;
+            editingId = task._id;
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.className = "text-red-500";
+        delBtn.onclick = async () => {
+            await fetch(`/tasks/${task._id}`, { method: "DELETE" });
+            loadTasks();
+        };
+
+        buttons.append(editBtn, delBtn);
+        li.append(span, buttons);
+        taskList.append(li);
     });
 }
 
-async function addTask(e) {
+// submit
+taskForm.addEventListener("submit", async e => {
     e.preventDefault();
 
-    const body = JSON.stringify({
-        task: task.value,
-        priority: priority.value,
-        hours: hours.value
-    });
-
-    await fetch("/api/tasks", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: body
-    });
-
-    loadTasks();
-    e.target.reset();
-}
-
-
-async function deleteTask(i) {
-    await fetch(`/api/tasks/${i}`, { method: "DELETE" });
-    loadTasks();
-}
-
-function loadTasks() {
-    fetch("/api/tasks")
-        .then(res => res.json())
-        .then(data => {
-            const table = document.querySelector("#results");
-            table.innerHTML = "";
-
-            data.forEach((t, i) => {
-                table.innerHTML += `
-          <tr>
-            <td>${t.task}</td>
-            <td>${t.priority}</td>
-            <td>${t.hours}</td>
-            <td>${t.created}</td>
-            <td>${t.deadline}</td>
-            <td>
-              <button onclick="editTask(${i})">Edit</button>
-              <button onclick="deleteTask(${i})">Delete</button>
-            </td>
-          </tr>
-        `;
-            });
+    if (editingId) {
+        await fetch(`/tasks/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: taskInput.value })
         });
-}
+        editingId = null;
+    } else {
+        await fetch("/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                text: taskInput.value,
+                username
+            })
+        });
+    }
 
-function editTask(index) {
-    const task = prompt("Task name:");
-    const priority = prompt("Priority (1–4):");
-    const hours = prompt("Hours needed:");
+    taskInput.value = "";
+    loadTasks();
+});
 
-    if (!task || !priority || !hours) return;
-
-    fetch(`/api/tasks/${index}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task, priority, hours })
-    }).then(() => loadTasks());
-}
+loadTasks();

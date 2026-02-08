@@ -7,9 +7,25 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "mime": "^2.4.4"
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
+    "mime": "^2.4.4",
+    "mongodb": "^6.21.0",
+    "mongoose": "^9.1.6"
   },
   "engines": {
-    "node":"16.x"
-  }
+    "node": "16.x"
+  },
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cs4241-c26/a3-DavidRestrepo1.git"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cs4241-c26/a3-DavidRestrepo1/issues"
+  },
+  "homepage": "https://github.com/cs4241-c26/a3-DavidRestrepo1#readme"
 }

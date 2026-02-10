@@ -77,16 +77,30 @@ app.get("/api/tasks", async (req, res) => {
 
 // add task
 app.post("/api/tasks", async (req, res) => {
+    const { text, username, difficulty } = req.body;
+
+    const createdAt = new Date();
+
+    let daysToAdd;
+    if (difficulty === "easy") daysToAdd = 1;
+    else if (difficulty === "medium") daysToAdd = 3;
+    else daysToAdd = 7;
+
+    const dueBy = new Date(createdAt);
+    dueBy.setDate(dueBy.getDate() + daysToAdd);
+
     const task = {
-        text: req.body.text,
-        username: req.body.username,
-        difficulty: req.body.difficulty,
-        points: req.body.points
+        text,
+        username,
+        difficulty,
+        createdAt,
+        dueBy
     };
 
     await tasksCollection.insertOne(task);
     res.json(task);
 });
+
 
 
 // update task

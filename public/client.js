@@ -30,17 +30,30 @@ function render(tasks) {
 
     tasks.forEach(task => {
         const li = document.createElement("li");
+        li.className = `task ${task.difficulty}`;
 
-        li.textContent = `${task.text} | Difficulty: ${task.difficulty} | Points: ${task.points} `;
+        const dueDate = new Date(task.dueBy).toLocaleDateString();
+
+        li.innerHTML = `
+            <div class="task-text">${task.text}</div>
+            <div class="task-meta">
+                <span class="badge ${task.difficulty}">
+                    ${task.difficulty.toUpperCase()}
+                </span>
+                <span class="due-date">Due by: ${dueDate}</span>
+            </div>
+        `;
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "Delete";
+        delBtn.className = "delete-btn";
         delBtn.onclick = () => deleteTask(task._id);
 
         li.appendChild(delBtn);
         taskList.appendChild(li);
     });
 }
+
 
 
 // add task
@@ -52,19 +65,16 @@ taskForm.addEventListener("submit", async (e) => {
 
     if (!text) return;
 
-    const points =
-        difficulty === "easy" ? 1 :
-            difficulty === "medium" ? 3 : 5;
-
     await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, username, difficulty, points })
+        body: JSON.stringify({ text, username, difficulty })
     });
 
     taskInput.value = "";
     loadTasks();
 });
+
 
 
 // delete task

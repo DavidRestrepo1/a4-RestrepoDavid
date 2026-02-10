@@ -3,34 +3,45 @@ const { MongoClient, ObjectId } = require("mongodb");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const uri = process.env.MONGO_URI;
 
-// middleware
+// ---------- Middleware ----------
 app.use(express.json());
 app.use(express.static("public"));
 
-// MongoDB
-const uri = "mongodb://127.0.0.1:27017";
+// ---------- Mongo Setup ----------
+if (!uri) {
+    console.error("MONGO_URI not set");
+    process.exit(1);
+}
+
 const client = new MongoClient(uri);
 
 let usersCollection;
 let tasksCollection;
 
 async function startServer() {
-    await client.connect();
-    const db = client.db("assignment3");
+    try {
+        await client.connect();
+        console.log("MongoDB connected");
 
-    usersCollection = db.collection("users");
-    tasksCollection = db.collection("tasks");
+        const db = client.db("assignment3");
+        usersCollection = db.collection("users");
+        tasksCollection = db.collection("tasks");
 
-    app.listen(PORT, () =>
-        console.log(`Server running at http://localhost:${PORT}`)
-    );
+        app.listen(PORT, () =>
+            console.log(`Server running on port ${PORT}`)
+        );
+    } catch (err) {
+        console.error("Mongo error:", err);
+        process.exit(1);
+    }
 }
 
 startServer();
 
-/* ---------- ROUTES ---------- */
+// ---------- ROUTES ----------
 
 // login page
 app.get("/", (req, res) => {
@@ -42,7 +53,7 @@ app.get("/app.html", (req, res) => {
     res.sendFile(path.join(__dirname, "public/app.html"));
 });
 
-// login (create user if needed)
+// login (auto-create user)
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
@@ -56,27 +67,31 @@ app.post("/login", async (req, res) => {
 });
 
 // get tasks for user
-app.get("/tasks/:username", async (req, res) => {
-    const tasks = await tasksCollection.find({
-        username: req.params.username
-    }).toArray();
+app.get("/api/tasks", async (req, res) => {
+    const { username } = req.query;
+
+    const tasks = await tasksCollection
+        .find({ username })
+        .toArray();
 
     res.json(tasks);
 });
 
 // add task
-app.post("/tasks", async (req, res) => {
+app.post("/api/tasks", async (req, res) => {
     const task = {
         text: req.body.text,
-        username: req.body.username
+        username: req.body.username,
+        createdAt: new Date()
     };
 
     await tasksCollection.insertOne(task);
+
     res.json(task);
 });
 
 // update task
-app.put("/tasks/:id", async (req, res) => {
+app.put("/api/tasks/:id", async (req, res) => {
     await tasksCollection.updateOne(
         { _id: new ObjectId(req.params.id) },
         { $set: { text: req.body.text } }
@@ -86,7 +101,7 @@ app.put("/tasks/:id", async (req, res) => {
 });
 
 // delete task
-app.delete("/tasks/:id", async (req, res) => {
+app.delete("/api/tasks/:id", async (req, res) => {
     await tasksCollection.deleteOne({
         _id: new ObjectId(req.params.id)
     });

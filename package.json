@@ -10,8 +10,7 @@
     "cors": "^2.8.6",
     "express": "^4.22.1",
     "mime": "^2.4.4",
-    "mongodb": "^6.21.0",
-    "mongoose": "^9.1.6"
+    "mongodb": "^6.21.0"
   },
   "engines": {
     "node": "16.x"

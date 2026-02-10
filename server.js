@@ -66,13 +66,11 @@ app.post("/login", async (req, res) => {
     res.sendStatus(200);
 });
 
-// get tasks for user
+// get tasks
 app.get("/api/tasks", async (req, res) => {
-    const { username } = req.query;
-
-    const tasks = await tasksCollection
-        .find({ username })
-        .toArray();
+    const tasks = await tasksCollection.find({
+        username: req.query.username
+    }).toArray();
 
     res.json(tasks);
 });
@@ -82,13 +80,14 @@ app.post("/api/tasks", async (req, res) => {
     const task = {
         text: req.body.text,
         username: req.body.username,
-        createdAt: new Date()
+        difficulty: req.body.difficulty,
+        points: req.body.points
     };
 
     await tasksCollection.insertOne(task);
-
     res.json(task);
 });
+
 
 // update task
 app.put("/api/tasks/:id", async (req, res) => {

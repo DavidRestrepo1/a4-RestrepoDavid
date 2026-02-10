@@ -1,4 +1,5 @@
 const username = localStorage.getItem("username");
+const difficultySelect = document.getElementById("difficulty");
 
 // redirect if not logged in
 if (!username) {
@@ -29,7 +30,8 @@ function render(tasks) {
 
     tasks.forEach(task => {
         const li = document.createElement("li");
-        li.textContent = task.text;
+
+        li.textContent = `${task.text} | Difficulty: ${task.difficulty} | Points: ${task.points} `;
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "Delete";
@@ -40,22 +42,30 @@ function render(tasks) {
     });
 }
 
+
 // add task
 taskForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const text = taskInput.value.trim();
+    const difficulty = difficultySelect.value;
+
     if (!text) return;
+
+    const points =
+        difficulty === "easy" ? 1 :
+            difficulty === "medium" ? 3 : 5;
 
     await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, username })
+        body: JSON.stringify({ text, username, difficulty, points })
     });
 
     taskInput.value = "";
     loadTasks();
 });
+
 
 // delete task
 async function deleteTask(id) {

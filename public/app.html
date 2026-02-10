@@ -16,20 +16,20 @@
         </button>
     </div>
 
-    <form id="taskForm" class="flex gap-2 mb-4">
-        <input
-                id="taskInput"
-                type="text"
-                placeholder="Enter task"
-                class="flex-1 border rounded px-3 py-2"
-                required
-        />
-        <button class="bg-blue-500 text-white px-4 rounded">
-            Save
-        </button>
+    <form id="taskForm">
+        <input id="taskInput" type="text" placeholder="New task" required />
+
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button type="submit">Add Task</button>
     </form>
 
-    <ul id="taskList" class="space-y-2"></ul>
+    <ul id="taskList"></ul>
+
 </div>
 
 <script src="/client.js"></script>

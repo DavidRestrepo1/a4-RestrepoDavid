@@ -10,8 +10,6 @@ const taskInput = document.getElementById("taskInput");
 const taskList = document.getElementById("taskList");
 const logoutBtn = document.getElementById("logoutBtn");
 
-let editingId = null;
-
 // logout
 logoutBtn.onclick = () => {
     localStorage.clear();
@@ -20,20 +18,33 @@ logoutBtn.onclick = () => {
 
 // load tasks
 async function loadTasks() {
-    const username = localStorage.getItem("username");
-
     const res = await fetch(`/api/tasks?username=${username}`);
     const tasks = await res.json();
-
     render(tasks);
 }
 
-form.addEventListener("submit", async (e) => {
+// render tasks
+function render(tasks) {
+    taskList.innerHTML = "";
+
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.textContent = task.text;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.onclick = () => deleteTask(task._id);
+
+        li.appendChild(delBtn);
+        taskList.appendChild(li);
+    });
+}
+
+// add task
+taskForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const text = input.value.trim();
-    const username = localStorage.getItem("username");
-
+    const text = taskInput.value.trim();
     if (!text) return;
 
     await fetch("/api/tasks", {
@@ -42,23 +53,14 @@ form.addEventListener("submit", async (e) => {
         body: JSON.stringify({ text, username })
     });
 
-    input.value = "";
+    taskInput.value = "";
     loadTasks();
 });
 
+// delete task
 async function deleteTask(id) {
     await fetch(`/api/tasks/${id}`, {
         method: "DELETE"
-    });
-
-    loadTasks();
-}
-
-async function updateTask(id, newText) {
-    await fetch(`/api/tasks/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newText })
     });
 
     loadTasks();

@@ -1,23 +1,18 @@
-Sample Readme (delete the above when you're ready to submit, and modify the below so with your links and descriptions)
----
-
-## Task Manager
+Task Tracker
 Restrepo, David: Render or AWS link
 
-The goal of this project was to create a three-tier web application that allows users to log in and manage their own tasks using a persistent MongoDB database. Users can
-add, edit, and delete tasks, and only see data associated with their account.
+This project is a full-stack MERN application built using MongoDB, Express, React, and Node.js, with JWT-based user authentication
+and Tailwind CSS for styling. It reimplements Assignment #3 using a modern web framework architecture and component-based frontend design.
 
-A key challenge was implementing user authentication using browser localStorage instead of a traditional authentication system, while correctly associating data with
-individual users. Coordinating data flow between the client, Express server, and MongoDB was also a challenge.
+Compared to Assignment #3, the application was significantly refactored and expanded. The frontend was rebuilt using React components
+instead of static HTML, allowing for dynamic rendering and better state management. Styling was implemented using Tailwind CSS instead
+of custom CSS. On the backend, Express was used to create RESTful API routes, and MongoDB was integrated for persistent data storage.
+JWT authentication was added to securely handle user registration, login, and protected routes. The application now follows a
+client-server architecture with proper separation of concerns and secure user authentication.
 
-The application uses Tailwind CSS for styling because it provides a clean, professional design with minimal custom CSS. No significant modifications were made to the
-framework beyond minor layout and spacing adjustments. ![img.png](img.png)
-![img_1.png](img_1.png)
-## Technical Achievements
-- **Tech Achievement 1**: This project was deployed using Vercel instead of Render. Compared to Render, this platform provided
-faster deployment times and a simpler integration workflow for Node.js applications. In particular, automatic redeployments on GitHub pushes made iteration easier. However,
-configuring environment variables and database connections required more manual setup than on Render. Overall, this platform offered greater flexibility, but required a 
-deeper understanding of deployment configuration.
-
-## Design/Evaluation Achievements
-- **Design Achievement 1**: 
+Technical Achievements (10 points)
+For a maximum of 110 points, also implement GitHub authentication using either Passport GitHub1, Passport GitHub2, or Passport
+Local Strategy. You must either use GitHub authentication or provide a username/password to access a dummy account. Course
+staff cannot be expected, for example, to have a personal Facebook, Google, or Twitter account to use when grading this assignment.
+Please contact the course staff if you have any questions about this. THIS IS THE HARDEST ACHIEVEMENT OFFERED IN WEBWARE. It is
+highly recommended that you complete the required JWT authentication first and then attempt this!
